@@ -73,6 +73,10 @@ h1 span,h2 span,.hl{color:var(--main-color);background:linear-gradient(135deg,va
 /* about */
 .about-grid{display:grid;grid-template-columns:1fr 1.8fr;gap:60px;align-items:center}
 .about-mark{aspect-ratio:1/1;max-width:340px;width:100%;margin:0 auto;border-radius:24px;border:3px solid var(--border-color);background:radial-gradient(circle at 30% 20%,rgba(242,140,56,.3),var(--card-bg) 70%);box-shadow:0 25px 50px var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center}
+.about-mark{position:relative;overflow:hidden}
+.about-mark canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;transition:opacity .6s ease}
+.about-mark.has-rive canvas{opacity:1}
+.about-mark.has-rive b,.about-mark.has-rive small{visibility:hidden}
 .about-mark b{font-size:5rem;font-weight:800;line-height:1}
 .about-mark small{color:var(--text-secondary);font-size:.9rem;font-weight:600}
 .about-text p{margin-bottom:18px}
@@ -192,7 +196,7 @@ footer{text-align:center;padding:50px 20px;background:var(--second-bg);border-to
   <h2 class="section-title">À propos de <span>moi</span></h2>
   <p class="section-lead">Jeune diplômé, développeur web, basé à Lille.</p>
   <div class="about-grid">
-    <div class="about-mark" aria-hidden="true"><b class="hl">T</b><small>Toshysna Corp</small></div>
+    <div class="about-mark" id="riveBox" role="img" aria-label="Animation interactive Toshysna Corp"><canvas id="riveCanvas"></canvas><b class="hl">T</b><small>Toshysna Corp</small></div>
     <div class="about-text">
       <p>Je m’appelle <strong>Anselme Bartolucci-Caro</strong>, aussi connu sous le pseudo <strong>Toshysna</strong>. Diplômé d’un BTS SIO option SLAM (lycée Gaston Berger, Lille), je conçois et développe des sites web de A à Z.</p>
       <p>Avec <strong>Toshysna Corp</strong>, je mets mon expérience au service des <strong>restaurants et cafés</strong> : un site qui présente votre carte, vos horaires et votre ambiance, que vous pouvez mettre à jour vous-même, et que vos clients trouvent facilement sur Google.</p>
@@ -367,6 +371,7 @@ footer{text-align:center;padding:50px 20px;background:var(--second-bg);border-to
 
 <footer>© <span id="year">2026</span> Toshysna Corp · Anselme Bartolucci-Caro · Lille</footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@rive-app/canvas@2.31.6" defer></script>
 <script>
 (function(){
   var burger=document.getElementById('burger'),menu=document.getElementById('navLinks');
@@ -383,6 +388,26 @@ footer{text-align:center;padding:50px 20px;background:var(--second-bg);border-to
   }
   window.addEventListener('scroll',setActive,{passive:true});setActive();
   document.getElementById('year').textContent=new Date().getFullYear();
+
+  /* Animation Rive dans le cadre « À propos » (si le fichier ou le runtime manque, le T reste affiché) */
+  window.addEventListener('load',function(){
+    var box=document.getElementById('riveBox'),cv=document.getElementById('riveCanvas');
+    if(!box||!cv||!window.rive)return;
+    var r=new rive.Rive({
+      src:'toshysna.riv',
+      canvas:cv,
+      stateMachines:'State Machine 1',
+      autoplay:true,
+      layout:new rive.Layout({fit:rive.Fit.Cover,alignment:rive.Alignment.Center}),
+      onLoad:function(){
+        r.resizeDrawingSurfaceToCanvas();
+        box.classList.add('has-rive');
+        if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)r.pause();
+      },
+      onLoadError:function(){console.warn('toshysna.riv introuvable : le T de secours reste affiché')}
+    });
+    window.addEventListener('resize',function(){r.resizeDrawingSurfaceToCanvas()});
+  });
 })();
 </script>
 </body>
